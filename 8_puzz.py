@@ -1,10 +1,15 @@
+from gc import get_referents
+import time
 from typing import Dict, Tuple
 from simpleai.search import (
     SearchProblem,
     breadth_first,
+    depth_first,
+    limited_depth_first,
     iterative_limited_depth_first,
-    astar,
+    uniform_cost,
     greedy,
+    astar,
 )
 from simpleai.search.viewers import BaseViewer, ConsoleViewer, WebViewer
 
@@ -16,7 +21,7 @@ class EightPuzzleProblem(SearchProblem):
     def __init__(self, initial_state=None):
         super().__init__(initial_state)
         self.penalty: int = 2
-        self.moves: Tuple[str] = ("▼", "▶", "◀", "▲")
+        self.moves: Tuple[str, str, str, str] = ("▼", "▶", "◀", "▲")
         self.transformations: Dict[Tuple[int, str], Tuple[int, int]] = {
             (0, "◀"): (1, 0),
             (0, "▲"): (3, 0),
@@ -43,7 +48,7 @@ class EightPuzzleProblem(SearchProblem):
             (8, "▼"): (5, 8),
             (8, "▶"): (7, 8),
         }
-        self.cartesian: Dict[int, Tuple(int, int)] = {
+        self.cartesian: Dict[int, Tuple[int, int]] = {
             0: (0, 0),
             1: (0, 1),
             2: (0, 2),
@@ -54,7 +59,7 @@ class EightPuzzleProblem(SearchProblem):
             7: (2, 1),
             8: (2, 2),
         }
-        self.reversal_positions: Tuple(int, int) = (
+        self.reversal_positions: Tuple[int, int] = (
             (0, 1),
             (1, 2),
             (3, 4),
@@ -118,12 +123,17 @@ class EightPuzzleProblem(SearchProblem):
         return manhattan + penalty
 
 
-initial = (7, 2, 4, 5, 0, 6, 8, 3, 1)
-# initial = (4, 3, 2, 1, 0, 5, 6, 7, 8)
+initial_1 = (7, 2, 4, 5, 0, 6, 8, 3, 1)
+initial_2 = (4, 3, 2, 1, 0, 5, 6, 7, 8)
+initial_3 = (5, 2, 8, 7, 3, 1, 0, 6, 4)
 
 problem = EightPuzzleProblem(initial_state=initial)
-result = astar(problem, graph_search=True, viewer=ConsoleViewer())
-
-print(result.state)
+start = time.perf_counter_ns()
+result = astar(problem, graph_search=True, viewer=BaseViewer())
+end = time.perf_counter_ns()
+time_ms = (end - start) / 1e6
+print(f"Time: {time_ms} ms")
 print(f"Moves: {[m[0] for m in result.path()][1:]}")
+print(result.state)
+
 # print(f"Time: {sum(times)/len(times)} ms")
